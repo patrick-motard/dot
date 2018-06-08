@@ -1,6 +1,5 @@
 // Copyright © 2018 Patrick Motard <motard19@gmail.com>
 
-
 package cmd
 
 import (
