@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"reflect"
+	"strings"
 )
 
 type Settings struct {
@@ -48,8 +50,19 @@ func GetSettings() {
 		os.Exit(1)
 	}
 
-	var c Settings
-	json.Unmarshal(raw, &c)
-	fmt.Println(c.Monitors.Current)
+	var s Settings
+	json.Unmarshal(raw, &s)
+	fmt.Println(s.Monitors.Current)
+
+	ss := []string{s.Monitors.Location, s.Monitors.Current}
+	cf := strings.Join(ss, "/")
+	// fmt.Println(strings.Join(ss, "/"))
+	fmt.Println(reflect.TypeOf(cf))
+	r, err := ioutil.ReadFile(cf)
+
+	fmt.Println("r:", reflect.TypeOf(r))
+	// rs := string(r)
+	fmt.Println(ss)
+	fmt.Println(string(r))
 	// return c
 }
