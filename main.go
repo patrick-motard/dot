@@ -2,8 +2,10 @@
 
 package main
 
-import "github.com/patrick-motard/dot/cmd"
-import "github.com/patrick-motard/dot/lib"
+import (
+	"github.com/patrick-motard/dot/cmd"
+	"github.com/patrick-motard/dot/lib"
+)
 
 func main() {
 	lib.GetSettings()
