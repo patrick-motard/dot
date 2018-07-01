@@ -1,14 +1,14 @@
 package lib
 
 import (
-	"bytes"
+	// "bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
+	// "log"
 	"os"
-	"os/exec"
-	"reflect"
+	// "os/exec"
+	// "reflect"
 	"strings"
 )
 
@@ -45,7 +45,7 @@ func toJSON(p interface{}) string {
 // 	fmt.Println(toJSON(settings))
 // }
 
-func GetSettings() {
+func GetSettings() Settings {
 	raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
 	// raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
 	if err != nil {
@@ -55,15 +55,16 @@ func GetSettings() {
 
 	var s Settings
 	json.Unmarshal(raw, &s)
-	fmt.Println(s.Monitors.Current)
+	// fmt.Println(s.Monitors.Current)
+	return s
 
-	ss := []string{s.Monitors.Location, s.Monitors.Current}
-	cf := strings.Join(ss, "/")
+	// ss := []string{s.Monitors.Location, s.Monitors.Current}
+	// cf := strings.Join(ss, "/")
 	// fmt.Println(strings.Join(ss, "/"))
-	fmt.Println(reflect.TypeOf(cf))
+	// fmt.Println(reflect.TypeOf(cf))
 	// r, err := ioutil.ReadFile(cf)
-	cf = fullPath(cf)
-	fmt.Println(fullPath(cf))
+	// cf = fullPath(cf)
+	// fmt.Println(fullPath(cf))
 
 	// var  (
 	// 	cmdOut []byte
@@ -83,18 +84,18 @@ func GetSettings() {
 
 	// fmt.Println("r:", reflect.TypeOf(r))
 	// rs := string(r)
-	fmt.Println("cf:", cf)
+	// fmt.Println("cf:", cf)
 	// fmt.Println(string(r))
 	// return c
 
-	cmd := exec.Command("/bin/bash", cf)
-	var out bytes.Buffer
-	cmd.Stderr = &out
-	err3 := cmd.Run()
-	if err3 != nil {
-		log.Fatal(err3)
-	}
-	fmt.Println("Output std: ", out.String())
+	// cmd := exec.Command("/bin/bash", cf)
+	// var out bytes.Buffer
+	// cmd.Stderr = &out
+	// err3 := cmd.Run()
+	// if err3 != nil {
+	// 	log.Fatal(err3)
+	// }
+	// fmt.Println("Output std: ", out.String())
 }
 
 func fullPath(s string) string {
