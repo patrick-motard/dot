@@ -4,14 +4,14 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"log"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:   "list",
+// selectCmd represents the select command
+var selectCmd = &cobra.Command{
+	Use:   "select",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
@@ -19,32 +19,24 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
-		// fmt.Println(settings.Monitors.Location)
-		location := settings.Monitors.Location
-		files, err := ioutil.ReadDir(location)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, file := range files {
-			fmt.Println(file.Name())
-		}
+		fmt.Println("select called")
+		fmt.Println("Print: ", strings.Join(args, " "))
+		settings.Monitors.SetCurrent(args[0])
 	},
 }
 
 func init() {
-	screenCmd.AddCommand(listCmd)
+	screenCmd.AddCommand(selectCmd)
 
-	// fmt.Println(settings.Monitors.Location)
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// listCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// selectCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// selectCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

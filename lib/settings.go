@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var s Settings
+
 type Settings struct {
 	Monitors Monitors
 }
@@ -35,15 +37,22 @@ func toJSON(p interface{}) string {
 	return string(bytes)
 }
 
-// func main() {
-
-// 	settings := GetSettings()
-// 	for _, p := range settings {
-// 		fmt.Println(p.toString())
-// 	}
-
-// 	fmt.Println(toJSON(settings))
-// }
+func (s *Monitors) SetCurrent(current string) {
+	location := s.Location
+	files, err := ioutil.ReadDir(location)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	for i := 0; i < len(files); i++ {
+		if current == files[i].Name() {
+			fmt.Println("found a match!")
+			s.Current = current
+			return
+		}
+	}
+	fmt.Println("file not found")
+}
 
 func GetSettings() Settings {
 	raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
@@ -53,9 +62,11 @@ func GetSettings() Settings {
 		os.Exit(1)
 	}
 
-	var s Settings
 	json.Unmarshal(raw, &s)
+
+	s.Monitors.Location = fullPath(s.Monitors.Location)
 	// fmt.Println(s.Monitors.Current)
+
 	return s
 
 	// ss := []string{s.Monitors.Location, s.Monitors.Current}
