@@ -24,6 +24,7 @@ to quickly create a Cobra application.`,
 		fmt.Println("select called")
 		fmt.Println("Print: ", strings.Join(args, " "))
 		settings.Monitors.SetCurrent(args[0])
+		settings.WriteSettings()
 	},
 }
 

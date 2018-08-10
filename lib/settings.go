@@ -23,22 +23,33 @@ type Monitors struct {
 	Location string `json:"location"`
 }
 
+func check(e error) {
+	if e != nil {
+		fmt.Println(e.Error())
+		os.Exit(1)
+	}
+}
+
 func (p Settings) toString() string {
 	return toJSON(p)
 }
 
 func toJSON(p interface{}) string {
 	bytes, err := json.Marshal(p)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-
+	check(err)
 	return string(bytes)
 }
 
-func (s *Monitors) SetCurrent(current string) {
-	location := s.Location
+func (s *Settings) WriteSettings() {
+	jsonData, err := json.MarshalIndent(s, "", "    ")
+	check(err)
+	e := ioutil.WriteFile("/home/han/.config/dotfiles/settings.json", jsonData, 0644)
+	check(e)
+
+}
+
+func (m *Monitors) SetCurrent(current string) {
+	location := m.Location
 	files, err := ioutil.ReadDir(location)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -47,7 +58,7 @@ func (s *Monitors) SetCurrent(current string) {
 	for i := 0; i < len(files); i++ {
 		if current == files[i].Name() {
 			fmt.Println("found a match!")
-			s.Current = current
+			m.Current = current
 			return
 		}
 	}
