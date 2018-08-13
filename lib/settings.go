@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	// "log"
 	"os"
-	// "os/exec"
+	"os/exec"
 	// "reflect"
 	"strings"
 )
@@ -15,7 +15,7 @@ import (
 var s Settings
 
 type Settings struct {
-	Monitors Monitors
+	Monitors Monitors `json:"monitors"`
 }
 
 type Monitors struct {
@@ -51,14 +51,15 @@ func (s *Settings) WriteSettings() {
 func (m *Monitors) SetCurrent(current string) {
 	location := m.Location
 	files, err := ioutil.ReadDir(location)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
+	check(err)
 	for i := 0; i < len(files); i++ {
 		if current == files[i].Name() {
 			fmt.Println("found a match!")
 			m.Current = current
+			screenlayoutScript := exec.Command("/bin/sh", strings.Join([]string{m.Location, m.Current}, "/"))
+			err := screenlayoutScript.Run()
+			fmt.Println(strings.Join([]string{m.Location, m.Current}, "/"))
+			check(err)
 			return
 		}
 	}
