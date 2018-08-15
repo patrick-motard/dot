@@ -4,8 +4,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +20,7 @@ to quickly create a Cobra application.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("select called")
-		fmt.Println("Print: ", strings.Join(args, " "))
+		// fmt.Println("Print: ", strings.Join(args, " "))
 		settings.Monitors.SetCurrent(args[0])
 		settings.WriteSettings()
 	},

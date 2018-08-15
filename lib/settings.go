@@ -43,9 +43,8 @@ func toJSON(p interface{}) string {
 func (s *Settings) WriteSettings() {
 	jsonData, err := json.MarshalIndent(s, "", "    ")
 	check(err)
-	e := ioutil.WriteFile("/home/han/.config/dotfiles/settings.json", jsonData, 0644)
+	e := ioutil.WriteFile("/home/han/.config/dotfiles/current_settings.json", jsonData, 0644)
 	check(e)
-
 }
 
 func (m *Monitors) SetCurrent(current string) {
@@ -54,12 +53,18 @@ func (m *Monitors) SetCurrent(current string) {
 	check(err)
 	for i := 0; i < len(files); i++ {
 		if current == files[i].Name() {
+
 			fmt.Println("found a match!")
+
 			m.Current = current
-			screenlayoutScript := exec.Command("/bin/sh", strings.Join([]string{m.Location, m.Current}, "/"))
+
+			fullPath := strings.Join([]string{location, m.Current}, "/")
+			fmt.Println(fullPath)
+
+			screenlayoutScript := exec.Command("/bin/sh", fullPath)
 			err := screenlayoutScript.Run()
-			fmt.Println(strings.Join([]string{m.Location, m.Current}, "/"))
 			check(err)
+
 			return
 		}
 	}
@@ -67,14 +72,23 @@ func (m *Monitors) SetCurrent(current string) {
 }
 
 func GetSettings() Settings {
-	raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
+	fmt.Println("Loading config: current_settings.json")
+	raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/current_settings.json")
+	if err != nil {
+		fmt.Println("Failed..")
+		fmt.Println("Loading config: settings.json")
+		raw, err = ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
+	}
+
 	// raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
 	if err != nil {
+		fmt.Println("Failed to read settings from settings.json & current_settings.json")
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 
-	json.Unmarshal(raw, &s)
+	err = json.Unmarshal(raw, &s)
+	check(err)
 
 	s.Monitors.Location = fullPath(s.Monitors.Location)
 	// fmt.Println(s.Monitors.Current)
