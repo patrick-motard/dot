@@ -47,40 +47,45 @@ func (s *Settings) WriteSettings() {
 	check(e)
 }
 
+func (m *Monitors) RunCurrent() {
+	fullPath := strings.Join([]string{m.Location, m.Current}, "/")
+	screenlayoutScript := exec.Command("/bin/sh", fullPath)
+	e := screenlayoutScript.Run()
+	check(e)
+	return
+}
+
 func (m *Monitors) SetCurrent(current string) {
 	location := m.Location
+	// files, err := ioutil.ReadDir(location)
 	files, err := ioutil.ReadDir(location)
-	check(err)
+	if err != nil {
+		fmt.Printf(fmt.Sprintf("Error: Directory not found %s", location))
+		os.Exit(1)
+	}
 	for i := 0; i < len(files); i++ {
 		if current == files[i].Name() {
-
 			fmt.Println("found a match!")
-
 			m.Current = current
-
-			fullPath := strings.Join([]string{location, m.Current}, "/")
-			fmt.Println(fullPath)
-
-			screenlayoutScript := exec.Command("/bin/sh", fullPath)
-			err := screenlayoutScript.Run()
-			check(err)
-
 			return
 		}
 	}
 	fmt.Println("file not found")
 }
 
+func (s *Settings) PrettyPrint() {
+	j, err := json.MarshalIndent(s, "", "    ")
+	check(err)
+	fmt.Printf("%s\n", j)
+}
 func GetSettings() Settings {
+	// TODO: replace these prints with debug/info level logs via glog or loggo, probbably glog for simplicity
 	fmt.Println("Loading config: current_settings.json")
 	raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/current_settings.json")
 	if err != nil {
-		fmt.Println("Failed..")
-		fmt.Println("Loading config: settings.json")
 		raw, err = ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
 	}
 
-	// raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
 	if err != nil {
 		fmt.Println("Failed to read settings from settings.json & current_settings.json")
 		fmt.Println(err.Error())
@@ -91,48 +96,9 @@ func GetSettings() Settings {
 	check(err)
 
 	s.Monitors.Location = fullPath(s.Monitors.Location)
-	// fmt.Println(s.Monitors.Current)
 
 	return s
 
-	// ss := []string{s.Monitors.Location, s.Monitors.Current}
-	// cf := strings.Join(ss, "/")
-	// fmt.Println(strings.Join(ss, "/"))
-	// fmt.Println(reflect.TypeOf(cf))
-	// r, err := ioutil.ReadFile(cf)
-	// cf = fullPath(cf)
-	// fmt.Println(fullPath(cf))
-
-	// var  (
-	// 	cmdOut []byte
-	// 	err2   error
-	// )
-	// cmdName := "/bin/bash"
-	// cmdArgs := []string{cf}
-	// // cmd := exec.Command("bash", "/home/han/hello_world")
-	// // fmt.Println(err)
-	// if cmdOut, err2 = exec.Command(cmdName, cmdArgs...).Output(); err2 != nil {
-	// 	fmt.Fprintln(os.Stderr, "There was an error running the feh script: ", err2)
-	// 	os.Exit(1)
-	// }
-
-	// out := string(cmdOut)
-	// fmt.Println("OUTPUT: " + out)
-
-	// fmt.Println("r:", reflect.TypeOf(r))
-	// rs := string(r)
-	// fmt.Println("cf:", cf)
-	// fmt.Println(string(r))
-	// return c
-
-	// cmd := exec.Command("/bin/bash", cf)
-	// var out bytes.Buffer
-	// cmd.Stderr = &out
-	// err3 := cmd.Run()
-	// if err3 != nil {
-	// 	log.Fatal(err3)
-	// }
-	// fmt.Println("Output std: ", out.String())
 }
 
 func fullPath(s string) string {

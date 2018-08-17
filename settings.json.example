@@ -1,0 +1,6 @@
+{
+    "monitors": {
+        "current": "test.sh",
+        "location": "~/.screenlayout"
+    }
+}
