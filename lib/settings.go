@@ -16,12 +16,29 @@ var s Settings
 
 type Settings struct {
 	Monitors Monitors `json:"monitors"`
+	Sound Sound `json:"sound"`
 }
 
 type Monitors struct {
 	Current  string `json:"current"`
 	Location string `json:"location"`
 }
+
+type Sound struct {
+	Port string `json:"port"`
+}
+
+// type Sound struct {
+// 	DefaultSink Sink `json:"defaultSink"`
+// }
+
+// type Sink struct {
+// 	Id int `json:"id"`
+// 	CurrentPort string `json:"currentPort"`
+// 	Ports []string `json:"ports"`
+// }
+
+
 
 func check(e error) {
 	if e != nil {
@@ -80,7 +97,7 @@ func (s *Settings) PrettyPrint() {
 }
 func GetSettings() Settings {
 	// TODO: replace these prints with debug/info level logs via glog or loggo, probbably glog for simplicity
-	fmt.Println("Loading config: current_settings.json")
+	// fmt.Println("Loading config: current_settings.json")
 	raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/current_settings.json")
 	if err != nil {
 		raw, err = ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
