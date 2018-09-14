@@ -6,10 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
+	"io/ioutil"
+	"os"
 )
 
 var load string
 var validArgs = []string{"load"}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
 
 var i3Cmd = &cobra.Command{
 	Use:       "i3",
@@ -23,7 +31,19 @@ var i3Cmd = &cobra.Command{
 		return cobra.OnlyValidArgs(cmd, args)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("i3 called")
+		// fmt.Println("i3 called")
+		if args[0] != "load" {
+			os.Exit(0)
+		}
+		// dat, err := ioutil.ReadFile("/home/han/.config/i3/config.bak")
+		// check(err)
+		files, err := ioutil.ReadDir("/home/han/.config/i3/")
+		check(err)
+		for _, f := range files {
+			fmt.Println(f.Name())
+		}
+		// fmt.Print(string(dat))
+		fmt.Println(args)
 	},
 }
 
