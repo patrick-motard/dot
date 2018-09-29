@@ -1,15 +1,12 @@
 {
-    "monitors": {
-        "current": "home_1440-HDMI-L_1440-DP-0-R",
-        "location": "/home/han/.screenlayout"
-    },
-    "sound": {
-        "port": "analog-output-lineout"
-    },
-    "i3": {
-        "computer": "home-desktop",
-        "files": [
-            "home-desktop-0"
-        ]
-    }
+  "monitors": {
+    "current": "1080L-1440R-2.sh",
+    "location": "/home/han/.screenlayout"
+  },
+  "outerkey": {
+    "test": "val"
+  },
+  "sound": {
+    "port": ""
+  }
 }

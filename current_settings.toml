@@ -1,0 +1,9 @@
+[monitors]
+current = "1080L-1440R-2.sh"
+location = "/home/han/.screenlayout"
+
+[outerkey]
+test = "val"
+
+[sound]
+port = ""

@@ -1,6 +1,5 @@
 // Copyright © 2018 Patrick Motard <motard19@gmail.com>
 
-
 package cmd
 
 import (
@@ -13,9 +12,7 @@ import (
 var soundCmd = &cobra.Command{
 	Use:   "sound",
 	Short: "The sound command holds all commands needed for interacting with the systems audio.",
-	Long: ``,
-	ValidArgs: []string{ "port" },
-	Args: cobra.OnlyValidArgs,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sound called")
 	},

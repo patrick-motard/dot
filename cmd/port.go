@@ -1,12 +1,11 @@
 // Copyright © 2018 Patrick Motard <motard19@gmail.com>
 
-
 package cmd
 
 import (
 	"fmt"
-	"os"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 // portCmd represents the port command

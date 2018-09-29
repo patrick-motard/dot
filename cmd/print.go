@@ -9,7 +9,7 @@ import (
 // printCmd represents the print command
 var printCmd = &cobra.Command{
 	Use:   "print",
-	Short: "A brief description of your command",
+	Short: "Prints settings from current_settings.json if it exists, otherwise settings.json",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 

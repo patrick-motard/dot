@@ -9,14 +9,17 @@ import (
 	"os"
 	"os/exec"
 	// "reflect"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
 
 var s Settings
+var settingsFilePath = "/home/han/code/go/src/github.com/patrick-motard/dot/current_settings.json"
+var defaultSettingsFilePath = "/home/han/code/go/src/github.com/patrick-motard/dot/settings.json"
 
 type Settings struct {
 	Monitors Monitors `json:"monitors"`
-	Sound Sound `json:"sound"`
+	Sound    Sound    `json:"sound"`
 }
 
 type Monitors struct {
@@ -38,8 +41,6 @@ type Sound struct {
 // 	Ports []string `json:"ports"`
 // }
 
-
-
 func check(e error) {
 	if e != nil {
 		fmt.Println(e.Error())
@@ -60,7 +61,7 @@ func toJSON(p interface{}) string {
 func (s *Settings) WriteSettings() {
 	jsonData, err := json.MarshalIndent(s, "", "    ")
 	check(err)
-	e := ioutil.WriteFile("/home/han/.config/dotfiles/current_settings.json", jsonData, 0644)
+	e := ioutil.WriteFile(settingsFilePath, jsonData, 0644)
 	check(e)
 }
 
@@ -95,12 +96,17 @@ func (s *Settings) PrettyPrint() {
 	check(err)
 	fmt.Printf("%s\n", j)
 }
+
 func GetSettings() Settings {
 	// TODO: replace these prints with debug/info level logs via glog or loggo, probbably glog for simplicity
-	// fmt.Println("Loading config: current_settings.json")
-	raw, err := ioutil.ReadFile("/home/han/.config/dotfiles/current_settings.json")
+	fmt.Println(fmt.Sprintf("Loading config: %s", settingsFilePath))
+	raw, err := ioutil.ReadFile(settingsFilePath)
+
 	if err != nil {
-		raw, err = ioutil.ReadFile("/home/han/.config/dotfiles/settings.json")
+		log.Info("Failed to load current_settings.json.")
+		// fmt.Println("Failed to load current_settings.json.")
+		fmt.Println(fmt.Sprintf("Loading config: %s", defaultSettingsFilePath))
+		raw, err = ioutil.ReadFile(defaultSettingsFilePath)
 	}
 
 	if err != nil {

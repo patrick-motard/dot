@@ -19,12 +19,7 @@ var settings lib.Settings
 var rootCmd = &cobra.Command{
 	Use:   "dot",
 	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  `Dot is a CLI for interacting with your system.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	//	Run: func(cmd *cobra.Command, args []string) { },
@@ -50,6 +45,7 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
 	settings = lib.GetSettings()
 }
 
@@ -58,6 +54,7 @@ func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
+
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
@@ -77,4 +74,14 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
+	fmt.Println(cfgFile)
+	var newKeypair = make(map[string]string)
+	newKeypair["test"] = "val"
+	viper.Set("outerKey", newKeypair)
+	viper.WriteConfig()
+	for _, property := range viper.AllSettings() {
+		fmt.Println(property)
+	}
+	fmt.Println(len(viper.AllSettings()))
+	fmt.Println(viper.GetString("monitors.current"))
 }
