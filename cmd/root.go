@@ -5,7 +5,7 @@ package cmd
 import (
 	"os"
 
-	homedir "github.com/mitchellh/go-homedir"
+	// homedir "github.com/mitchellh/go-homedir"
 	"github.com/patrick-motard/dot/lib"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -63,22 +63,34 @@ func initConfig() {
 
 	} else {
 		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
+		// home, err := homedir.Dir()
+		// if err != nil {
+		// 	log.Error(err)
+		// 	os.Exit(1)
+		// }
 
 		// Search config in home directory with name ".dot" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".dot")
+
+		var str = os.Getenv("GOPATH") + "/src/github.com/patrick-motard/dot/current_settings.toml"
+		// viper.AddConfigPath("/home/han/code/go/src/github.com/patrick-motard/dot")
+		// viper.SetConfigFile("/home/han/code/go/src/github.com/patrick-motard/dot/current_settings.toml")
+		viper.SetConfigFile(str)
+		// viper.SetConfigName("current_settings")
+		// viper.SetConfigType("toml")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		log.Info("Using config file:", viper.ConfigFileUsed())
+	err := viper.ReadInConfig()
+	// if err := viper.ReadInConfig(); err == nil {
+	// 	fmt.Print("got here")
+	// 	log.Info("Using config file:", viper.ConfigFileUsed())
+	// }
+
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	// for _, property := range viper.AllSettings() {

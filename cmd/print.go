@@ -13,19 +13,17 @@ import (
 // printCmd represents the print command
 var printCmd = &cobra.Command{
 	Use:   "print",
-	Short: "Prints settings from current_settings.json if it exists, otherwise settings.json",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Prints settings from current_settings.toml if it exists, otherwise settings.toml",
+	Long: `The default location for the .config file is found in the working directory of this project.
+You can override the config file location by passing in --config.
+This command will output the contents of the current config file.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// for _, property := range viper.AllSettings() {
 		// 	fmt.Println(property)
 		// }
 		// settings.PrettyPrint()
-
+		log.Info(viper.ConfigFileUsed())
 		dat, err := ioutil.ReadFile(viper.ConfigFileUsed())
 		if err != nil {
 			log.Error(err)
