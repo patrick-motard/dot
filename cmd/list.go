@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"log"
 )
 
 // listCmd represents the list command

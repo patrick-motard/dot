@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"io/ioutil"
+	"os"
 )
 
 // printCmd represents the print command
@@ -19,12 +21,17 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		for _, property := range viper.AllSettings() {
-			fmt.Println(property)
+		// for _, property := range viper.AllSettings() {
+		// 	fmt.Println(property)
+		// }
+		// settings.PrettyPrint()
+
+		dat, err := ioutil.ReadFile(viper.ConfigFileUsed())
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
 		}
-
-		settings.PrettyPrint()
-
+		fmt.Print(string(dat))
 	},
 }
 

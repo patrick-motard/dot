@@ -3,14 +3,17 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/patrick-motard/dot/lib"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/sirupsen/logrus"
 )
+
+var log = logrus.New()
 
 var cfgFile string
 var settings lib.Settings
@@ -29,12 +32,15 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
 }
 
 func init() {
+	if os.Getenv("DEBUG") != "true" {
+		log.SetLevel(logrus.WarnLevel)
+	}
 	cobra.OnInitialize(initConfig)
 
 	// Here you will define your flags and configuration settings.
@@ -46,7 +52,7 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	settings = lib.GetSettings()
+	// settings = lib.GetSettings()
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -59,7 +65,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err)
 			os.Exit(1)
 		}
 
@@ -72,16 +78,19 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		log.Info("Using config file:", viper.ConfigFileUsed())
 	}
-	fmt.Println(cfgFile)
-	var newKeypair = make(map[string]string)
-	newKeypair["test"] = "val"
-	viper.Set("outerKey", newKeypair)
-	viper.WriteConfig()
-	for _, property := range viper.AllSettings() {
-		fmt.Println(property)
-	}
-	fmt.Println(len(viper.AllSettings()))
-	fmt.Println(viper.GetString("monitors.current"))
+
+	// for _, property := range viper.AllSettings() {
+	// 	fmt.Println(property)
+	// }
+
+	// fmt.Println(len(viper.AllSettings()))
+	// fmt.Println(viper.GetString("monitors.current"))
 }
+
+// example of setting a value and writing config:
+// var newKeypair = make(map[string]string)
+// newKeypair["test"] = "val"
+// viper.Set("outerKey", newKeypair)
+// viper.WriteConfig()
