@@ -3,14 +3,18 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
-	// "strings"
+	"github.com/spf13/viper"
+	"os"
+	"os/exec"
+	"strings"
 )
 
 // selectCmd represents the select command
 var selectCmd = &cobra.Command{
 	Use:   "select",
-	Short: "A brief description of your command",
+	Short: "Select an randr script to apply to your system.",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -19,17 +23,26 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println("select called")
-		if len(args) == 0 {
-			settings.Monitors.RunCurrent()
-			return
+		if len(args) != 0 {
+			viper.Set("monitors.current", args[0])
 		}
-		settings.Monitors.SetCurrent(args[0])
-		settings.Monitors.RunCurrent()
-		settings.WriteSettings()
+		runCurrent()
+		viper.WriteConfig()
 	},
 }
 
+func runCurrent() {
+	location := viper.GetString("monitors.location")
+	current := viper.GetString("monitors.current")
+	fullPath := strings.Join([]string{location, current}, "/")
+	fmt.Println(fullPath)
+	arandrCmd := exec.Command("/bin/sh", fullPath)
+	e := arandrCmd.Run()
+	if e != nil {
+		fmt.Println(e.Error())
+		os.Exit(1)
+	}
+}
 func init() {
 	screenCmd.AddCommand(selectCmd)
 

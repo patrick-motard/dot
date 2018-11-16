@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	// "log"
 	"os"
-	"os/exec"
+	// "os/exec"
 	// "reflect"
 	log "github.com/sirupsen/logrus"
 	"strings"
@@ -65,13 +65,13 @@ func (s *Settings) WriteSettings() {
 	check(e)
 }
 
-func (m *Monitors) RunCurrent() {
-	fullPath := strings.Join([]string{m.Location, m.Current}, "/")
-	screenlayoutScript := exec.Command("/bin/sh", fullPath)
-	e := screenlayoutScript.Run()
-	check(e)
-	return
-}
+// func (m *Monitors) RunCurrent() {
+// 	fullPath := strings.Join([]string{m.Location, m.Current}, "/")
+// 	screenlayoutScript := exec.Command("/bin/sh", fullPath)
+// 	e := screenlayoutScript.Run()
+// 	check(e)
+// 	return
+// }
 
 func (m *Monitors) SetCurrent(current string) {
 	location := m.Location
