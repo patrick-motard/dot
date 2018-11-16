@@ -5,13 +5,15 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"io/ioutil"
+	"os"
 )
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "Output list of randr scripts on this system.",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:
 
@@ -20,14 +22,11 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("list called")
-		// fmt.Println(settings.Monitors.Location)
-
-		location := settings.Monitors.Location
-		files, err := ioutil.ReadDir(location)
-		if err != nil {
-			log.Fatal(err)
+		files, readErr := ioutil.ReadDir(viper.GetString("monitors.location"))
+		if readErr != nil {
+			log.Fatal(readErr)
+			os.Exit(1)
 		}
-
 		for _, file := range files {
 			fmt.Println(file.Name())
 		}
