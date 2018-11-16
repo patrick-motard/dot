@@ -5,6 +5,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 )
 
@@ -18,13 +19,24 @@ If you pass in a port, it sets config file to the port.
 `,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// example of setting a value and writing config:
+		// var newKeypair = make(map[string]string)
+		// newKeypair["test"] = "val"
+		// viper.Set("outerKey", newKeypair)
+		// viper.WriteConfig()
 		if len(args) == 0 {
-			fmt.Println(settings.Sound.Port)
+			// 	fmt.Println(settings.Sound.Port)
+			// 	os.Exit(0)
+			// fmt.Println("hello")
+			fmt.Println(viper.Get("sound.port"))
 			os.Exit(0)
 		}
+		viper.Set("sound.port", args[0])
+		viper.WriteConfig()
 
-		settings.Sound.Port = args[0]
-		settings.WriteSettings()
+		// fmt.Println(viper.Get("sound.port"))
+		// settings.Sound.Port = args[0]
+		// settings.WriteSettings()
 	},
 }
 

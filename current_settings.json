@@ -1,12 +1,9 @@
 {
-  "monitors": {
-    "current": "home_1440-HDMI-0-L_1440-DP-4-R.sh",
-    "location": "/home/han/.screenlayout"
-  },
-  "outerkey": {
-    "test": "val"
-  },
-  "sound": {
-    "port": ""
-  }
+    "monitors": {
+        "current": "",
+        "location": ""
+    },
+    "sound": {
+        "port": "analog-output-lineout"
+    }
 }

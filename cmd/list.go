@@ -21,6 +21,7 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("list called")
 		// fmt.Println(settings.Monitors.Location)
+
 		location := settings.Monitors.Location
 		files, err := ioutil.ReadDir(location)
 		if err != nil {
