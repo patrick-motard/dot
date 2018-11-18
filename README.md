@@ -92,7 +92,7 @@ home_1440-HDMI-L_1440-DP-0-R
 
 #### Run
 
-Run behaves like list, except it runs the scipt handed in via the `--name` flag. Like `list`, `run` will save your selection to `displays.current`.
+Run behaves like `select`, except it runs the scipt handed in via the `--name` flag. Like `select`, `run` will save your selection to `displays.current`.
 
 ```
 > dot displays run --name home_1440-HDMI-0-L_1440-DP-4-R.sh
