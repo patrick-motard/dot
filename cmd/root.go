@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	// "fmt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -93,8 +94,9 @@ func initConfig() {
 		os.Exit(1)
 	}
 
-	// for _, property := range viper.AllSettings() {
+	// for d, property := range viper.AllSettings() {
 	// 	fmt.Println(property)
+	// 	fmt.Println(d)
 	// }
 
 	// fmt.Println(len(viper.AllSettings()))

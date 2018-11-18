@@ -10,19 +10,12 @@ import (
 	"os"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
+var displaysListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Output list of randr scripts on this system.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Output list of RandR scripts on this system.",
+	Long:  `See 'dot display --help for more details.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
-		files, err := MonitorLocations()
+		files, err := DisplaysLocation()
 		if err != nil {
 			log.Fatal(err)
 			os.Exit(1)
@@ -33,8 +26,8 @@ to quickly create a Cobra application.`,
 	},
 }
 
-func MonitorLocations() ([]string, error) {
-	files, readErr := ioutil.ReadDir(viper.GetString("monitors.location"))
+func DisplaysLocation() ([]string, error) {
+	files, readErr := ioutil.ReadDir(viper.GetString("displays.location"))
 	var filenames []string
 	for _, file := range files {
 		filenames = append(filenames, file.Name())
@@ -43,7 +36,7 @@ func MonitorLocations() ([]string, error) {
 }
 
 func init() {
-	monitorsCmd.AddCommand(listCmd)
+	displaysCmd.AddCommand(displaysListCmd)
 
 	// fmt.Println(settings.Monitors.Location)
 	// Here you will define your flags and configuration settings.

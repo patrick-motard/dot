@@ -1,5 +1,5 @@
 
-[monitors]
+[displays]
   current = "home_1440-HDMI-0-L_1440-DP-4-R.sh"
   location = "/home/han/.screenlayout"
 
