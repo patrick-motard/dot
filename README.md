@@ -13,6 +13,8 @@ go run main.go
 
 Settings files are loaded from dot repo. To override use `--config`.
 
+Note: Dotfiles does not use the `--config` flag yet. It uses the default config file for dot for now. Don't bother using `--config` unless you want to point to a different config during local development on `dot`.
+
 ```
 go run main.go print
 ```
