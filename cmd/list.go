@@ -22,19 +22,28 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("list called")
-		files, readErr := ioutil.ReadDir(viper.GetString("monitors.location"))
-		if readErr != nil {
-			log.Fatal(readErr)
+		files, err := MonitorLocations()
+		if err != nil {
+			log.Fatal(err)
 			os.Exit(1)
 		}
 		for _, file := range files {
-			fmt.Println(file.Name())
+			fmt.Println(file)
 		}
 	},
 }
 
+func MonitorLocations() ([]string, error) {
+	files, readErr := ioutil.ReadDir(viper.GetString("monitors.location"))
+	var filenames []string
+	for _, file := range files {
+		filenames = append(filenames, file.Name())
+	}
+	return filenames, readErr
+}
+
 func init() {
-	screenCmd.AddCommand(listCmd)
+	monitorsCmd.AddCommand(listCmd)
 
 	// fmt.Println(settings.Monitors.Location)
 	// Here you will define your flags and configuration settings.

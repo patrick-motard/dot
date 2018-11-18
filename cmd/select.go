@@ -3,7 +3,9 @@
 package cmd
 
 import (
+	// "errors"
 	"fmt"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
@@ -15,19 +17,65 @@ import (
 var selectCmd = &cobra.Command{
 	Use:   "select",
 	Short: "Select an randr script to apply to your system.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Long: `DESCRIPTION:
+Select an RandR script from a list or call it directly by name. Dot will
+remember what you chose, even if you log out or reboot.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+CALLING:
+
+With no argument:
+
+dot screen select
+Use the arrow keys to navigate: ↓ ↑ → ←
+? Pick one:
+  ▸ 1080L-1440R
+    1440
+    1440-HDMI0-L-1440-DP4-R
+    1440L-1080R
+
+
+With argument:
+
+dot screen select 1440L-1080R
+
+
+NOTES:
+
+Scripts are from 'monitors.location' in your config. I like to use ~/.screenlayout/
+
+Each script is a shell script created by aRandR (a GUI for RandR).
+RandR is a CLI for setting screen orientation, resolution, and rotation. With aRandR
+you can visualy orient your monitors. Use aRandR to save the layout to a shell script
+then call this script to apply it to your system.
+
+Sometimes when you re-plugin monitors to your graphics card, it can
+invalidate your layout made with aRandR. It's a real annoyance that I don't have a
+fix for right now. You will have to recreate the layout and re-run 'dot screen select'
+`,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
+		files, err := MonitorLocations()
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		if len(args) == 0 {
+			prompt := promptui.Select{
+				Label: "Pick one",
+				Items: files,
+			}
+			_, result, err := prompt.Run()
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			viper.Set("monitors.current", result)
+		}
 		if len(args) != 0 {
 			viper.Set("monitors.current", args[0])
 		}
-		runCurrent()
 		viper.WriteConfig()
+		runCurrent()
 	},
 }
 
@@ -35,16 +83,17 @@ func runCurrent() {
 	location := viper.GetString("monitors.location")
 	current := viper.GetString("monitors.current")
 	fullPath := strings.Join([]string{location, current}, "/")
-	fmt.Println(fullPath)
 	arandrCmd := exec.Command("/bin/sh", fullPath)
-	e := arandrCmd.Run()
-	if e != nil {
-		fmt.Println(e.Error())
+	out, err := arandrCmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Failed to run script %s", current))
+		fmt.Println(out)
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 }
 func init() {
-	screenCmd.AddCommand(selectCmd)
+	monitorsCmd.AddCommand(selectCmd)
 
 	// Here you will define your flags and configuration settings.
 
