@@ -1,9 +1,0 @@
-{
-    "monitors": {
-        "current": "",
-        "location": ""
-    },
-    "sound": {
-        "port": "analog-output-lineout"
-    }
-}
