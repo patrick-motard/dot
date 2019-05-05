@@ -4,6 +4,7 @@ package cmd
 
 import (
 	"os"
+	"os/user"
 
 	// homedir "github.com/mitchellh/go-homedir"
 	"github.com/patrick-motard/dot/lib"
@@ -13,6 +14,8 @@ import (
 	// "fmt"
 	"github.com/sirupsen/logrus"
 )
+
+var Home string
 
 var log = logrus.New()
 
@@ -39,6 +42,14 @@ func Execute() {
 }
 
 func init() {
+
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	Home = usr.HomeDir
+
 	if os.Getenv("DEBUG") != "true" {
 		log.SetLevel(logrus.WarnLevel)
 	}
