@@ -8,6 +8,9 @@ import (
 	"github.com/BurntSushi/xgb/randr"
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/spf13/cobra"
+	"os"
+	"os/exec"
+	"sort"
 	// "os"
 )
 
@@ -19,6 +22,14 @@ var polybarCmd = &cobra.Command{
 		fmt.Println("You ran dot with the 'polybar' arguement.")
 		main()
 	},
+}
+
+type Display struct {
+	name      string
+	xposition int16
+	yposition int16
+	xres      int16
+	yres      int16
 }
 
 func init() {
@@ -35,42 +46,78 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// fmt.Printf("OUTPUT!! %+v\n", root)
+
+	y, _ := randr.GetOutputPrimary(X, root).Reply()
+	fmt.Printf("OUTPUT!! %+v\n", y)
+
+	// fmt.Printf("%+v\n", resources)
+	var displays []Display
 	for _, output := range resources.Outputs {
 		info, err := randr.GetOutputInfo(X, output, 0).Reply()
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		// fmt.Printf("OUTPUT!! %+v\n", info)
 		// fmt.Println(randr.ConnectionConnected)
 		// fmt.Println(info.Connection)
 		if info.Connection == randr.ConnectionConnected {
-			fmt.Println(string(info.Name))
+			fmt.Printf("OUTPUT INFO: \n%+v\n\n", info)
+			// fmt.Println(string(info.Name))
 			crtc, _ := randr.GetCrtcInfo(X, info.Crtc, 0).Reply()
-			fmt.Println(crtc.X)
-
-			bestMode := info.Modes[0]
-			for _, mode := range resources.Modes {
-				if mode.Id == uint32(bestMode) {
-					fmt.Printf("Width: %d, Height: %d, Name: %d\n", mode.Width, mode.Height, mode.Id)
-				}
+			fmt.Printf("%+v\n", crtc)
+			display := Display{
+				name:      string(info.Name),
+				xposition: crtc.X,
+				yposition: crtc.Y,
 			}
+			displays = append(displays, display)
+
+			// fmt.Printf("%+v\n", display)
+			// fmt.Println(crtc.X)
+
+			// bestMode := info.Modes[0]
+			// for _, mode := range resources.Modes {
+			// 	if mode.Id == uint32(bestMode) {
+			// 		fmt.Printf("%+v\n", mode)
+			// 		fmt.Printf("Width: %d, Height: %d, Name: %d\n", mode.Width, mode.Height, mode.Id)
+			// 	}
+			// }
 		}
 	}
-	// fmt.Println("")
-
-	// for _, outputs := range resources.Outputs {
-
-	// 	fmt.Println(outputs)
-
+	// for _, crtc := range resources.Crtcs {
+	// 	info, err := randr.GetCrtcInfo(X, crtc, 0).Reply()
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	// fmt.Println(info.Help)
+	// 	// fmt.Println(string(info))
+	// 	fmt.Printf("X: %d, Y: %d, Width: %d, Height: %d, Status: %d\n",
+	// 		info.X, info.Y, info.Width, info.Height, info.Status)
 	// }
-	for _, crtc := range resources.Crtcs {
-		info, err := randr.GetCrtcInfo(X, crtc, 0).Reply()
-		if err != nil {
-			log.Fatal(err)
-		}
-		// fmt.Println(info.Help)
-		// fmt.Println(string(info))
-		fmt.Printf("X: %d, Y: %d, Width: %d, Height: %d\n",
-			info.X, info.Y, info.Width, info.Height)
+	sort.Slice(displays, func(i, j int) bool {
+		return displays[i].xposition < displays[j].xposition
+	})
+	fmt.Printf("%+v\n", displays)
+
+	// kill polybar
+	cmd := exec.Command("sh", "-c", "killall -q polybar")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Infoln("Failed to kill polybar")
 	}
+	fmt.Println(string(out))
+
+	// start polybar
+	polybarEnvVars := []string{"MONITOR_MAIN=DP-4", "polybar_theme=/home/han/.config/polybar/nord/config"}
+	newEnv := append(os.Environ(), polybarEnvVars...)
+	cmd = exec.Command("bash", "-c", "polybar -r main.top.middle")
+	cmd.Env = newEnv
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		// log.Fatal(err)
+		fmt.Println(err)
+	}
+	fmt.Println(string(out))
 }
