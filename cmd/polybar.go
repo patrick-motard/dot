@@ -24,12 +24,16 @@ var polybarCmd = &cobra.Command{
 	},
 }
 
-type Display struct {
-	name      string
-	xposition int16
-	yposition int16
-	xres      int16
-	yres      int16
+type display struct {
+	name string // example: DP-4 or HDMI-1
+	// Position is where the display is relative to other displays on the screen.
+	// Screens are comprised of one or more displays.
+	xposition int16  // the x coordinate of the display on the screen
+	yposition int16  // the y coordinate of the display on the screen
+	xres      uint16 // The ideal x resolution.
+	yres      uint16 // The idea y resolution.
+	primary   bool   // Whether or not the display is the primary (main) display.
+	active    bool
 }
 
 func init() {
@@ -47,43 +51,44 @@ func main() {
 		log.Fatal(err)
 	}
 	// fmt.Printf("OUTPUT!! %+v\n", root)
-
-	y, _ := randr.GetOutputPrimary(X, root).Reply()
-	fmt.Printf("OUTPUT!! %+v\n", y)
-
-	// fmt.Printf("%+v\n", resources)
-	var displays []Display
+	primaryOutput, _ := randr.GetOutputPrimary(X, root).Reply()
+	var displays []display
 	for _, output := range resources.Outputs {
 		info, err := randr.GetOutputInfo(X, output, 0).Reply()
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		// fmt.Printf("OUTPUT!! %+v\n", info)
-		// fmt.Println(randr.ConnectionConnected)
-		// fmt.Println(info.Connection)
 		if info.Connection == randr.ConnectionConnected {
-			fmt.Printf("OUTPUT INFO: \n%+v\n\n", info)
-			// fmt.Println(string(info.Name))
-			crtc, _ := randr.GetCrtcInfo(X, info.Crtc, 0).Reply()
-			fmt.Printf("%+v\n", crtc)
-			display := Display{
-				name:      string(info.Name),
-				xposition: crtc.X,
-				yposition: crtc.Y,
+			d := display{
+				name: string(info.Name),
 			}
-			displays = append(displays, display)
+			crtc, err := randr.GetCrtcInfo(X, info.Crtc, 0).Reply()
+			if err != nil {
+				// log.Fatal("Failed to get CRTC info", err)
+				// "BadCrtc" happens when attempting to get
+				// a crtc for an output is disabled (inactive).
+				// TODO: figure out a better way to identify active vs inactive
 
-			// fmt.Printf("%+v\n", display)
-			// fmt.Println(crtc.X)
+				d.active = false
+			} else {
+				d.active = true
+				d.xposition = crtc.X
+				d.yposition = crtc.Y
+			}
 
-			// bestMode := info.Modes[0]
-			// for _, mode := range resources.Modes {
-			// 	if mode.Id == uint32(bestMode) {
-			// 		fmt.Printf("%+v\n", mode)
-			// 		fmt.Printf("Width: %d, Height: %d, Name: %d\n", mode.Width, mode.Height, mode.Id)
-			// 	}
-			// }
+			if output == primaryOutput.Output {
+				d.primary = true
+			} else {
+				d.primary = false
+			}
+			bestMode := info.Modes[0]
+			for _, mode := range resources.Modes {
+				if mode.Id == uint32(bestMode) {
+					d.xres = mode.Width
+					d.yres = mode.Height
+				}
+			}
+			displays = append(displays, d)
 		}
 	}
 	// for _, crtc := range resources.Crtcs {
@@ -110,7 +115,10 @@ func main() {
 	fmt.Println(string(out))
 
 	// start polybar
-	polybarEnvVars := []string{"MONITOR_MAIN=DP-4", "polybar_theme=/home/han/.config/polybar/nord/config"}
+	polybarEnvVars := []string{
+		"MONITOR_MAIN=DP-4",
+		"polybar_theme=/home/han/.config/polybar/nord/config",
+	}
 	newEnv := append(os.Environ(), polybarEnvVars...)
 	cmd = exec.Command("bash", "-c", "polybar -r main.top.middle")
 	cmd.Env = newEnv
