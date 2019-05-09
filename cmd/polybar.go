@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"sort"
+	"time"
 	// "os"
 )
 
@@ -113,16 +114,46 @@ func main() {
 		log.Infoln("Failed to kill polybar")
 	}
 	fmt.Println(string(out))
+	var polybarEnvVars []string
+	for i, d := range displays {
+		// skip inactive monitors
+		if !d.active {
+			continue
+		}
+		if d.primary {
+			s := fmt.Sprintf("MONITOR_MAIN=%s", d.name)
+			polybarEnvVars = append(polybarEnvVars, s)
+		} else if i == 0 {
+			s := fmt.Sprintf("MONITOR_LEFT=%s", d.name)
+			polybarEnvVars = append(polybarEnvVars, s)
+		} else if i == 2 {
+			s := fmt.Sprintf("MONITOR_RIGHT=%s", d.name)
+			polybarEnvVars = append(polybarEnvVars, s)
+		}
+
+	}
 
 	// start polybar
-	polybarEnvVars := []string{
-		"MONITOR_MAIN=DP-4",
-		"polybar_theme=/home/han/.config/polybar/nord/config",
-	}
+	polybarEnvVars = append(polybarEnvVars, "polybar_theme=/home/han/.config/polybar/nord/config")
 	newEnv := append(os.Environ(), polybarEnvVars...)
-	cmd = exec.Command("bash", "-c", "polybar -r main.top.middle")
-	cmd.Env = newEnv
-	out, err = cmd.CombinedOutput()
+	bars := []string{
+		"main.top.middle",
+		"left.top.middle",
+		"right.top.middle",
+	}
+	for _, bar := range bars {
+		go runPolybar(newEnv, bar)
+	}
+	// hack to allow goroutines to start
+	//TODO: replace with channels
+	time.Sleep(1 * time.Second)
+}
+
+func runPolybar(env []string, bar string) {
+	s := fmt.Sprintf("polybar -r %s", bar)
+	cmd := exec.Command("bash", "-c", s)
+	cmd.Env = env
+	out, err := cmd.CombinedOutput()
 	if err != nil {
 		// log.Fatal(err)
 		fmt.Println(err)
