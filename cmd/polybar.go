@@ -11,7 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"sort"
-	"time"
+	// "time"
 	// "os"
 )
 
@@ -126,7 +126,7 @@ func main() {
 		} else if i == 0 {
 			s := fmt.Sprintf("MONITOR_LEFT=%s", d.name)
 			polybarEnvVars = append(polybarEnvVars, s)
-		} else if i == 2 {
+		} else if i == 1 || i == 2 {
 			s := fmt.Sprintf("MONITOR_RIGHT=%s", d.name)
 			polybarEnvVars = append(polybarEnvVars, s)
 		}
@@ -141,22 +141,39 @@ func main() {
 		"left.top.middle",
 		"right.top.middle",
 	}
-	for _, bar := range bars {
-		go runPolybar(newEnv, bar)
+	// var done chan string
+	done := make(chan string, 3)
+	go runAllPolybar(newEnv, bars, done)
+	for {
+		v, ok := <-done
+		if ok == false {
+			break
+		}
+		fmt.Println("Received: ", v, ok)
 	}
 	// hack to allow goroutines to start
 	//TODO: replace with channels
-	time.Sleep(1 * time.Second)
+	// time.Sleep(1 * time.Second)
 }
 
-func runPolybar(env []string, bar string) {
+func runAllPolybar(envs, bars []string, ch chan string) {
+	for _, bar := range bars {
+		fmt.Println("Got here")
+		ch <- polybar(envs, bar)
+	}
+	close(ch)
+}
+func polybar(env []string, bar string) string {
 	s := fmt.Sprintf("polybar -r %s", bar)
 	cmd := exec.Command("bash", "-c", s)
 	cmd.Env = env
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		// log.Fatal(err)
-		fmt.Println(err)
+		return err.Error()
+		// fmt.Println(err)
 	}
-	fmt.Println(string(out))
+	return string(out)
+	// fmt.Println(string(out))
+	// done <- string(out)
 }
