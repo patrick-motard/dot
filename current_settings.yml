@@ -1,0 +1,15 @@
+---
+displays:
+  current: "home_hdmi-0_dp-4_dvi-d-0.sh"
+  location: "/home/han/.screenlayout"
+sound:
+  port: "analog-output-lineout"
+polybar:
+  themes:
+    - name: "nord-arrow"
+      bars: # if empty, dot will load all bars found in the theme.
+    - name: "nord"
+      bars: #
+        - "main.top.middle"
+        - "left.top.middle"
+        - "right.top.middle"

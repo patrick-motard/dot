@@ -36,6 +36,8 @@ go run main.go print
 
 Dot uses `current_settings.toml` in this repo to manage state. (this will be improved soon see [issue](https://github.com/patrick-motard/dot/issues/7)) Feel free to modify this file to reflect the correct values for your system.
 
+You can also override the config file location and filename by passing in the `--config` flag
+
 #### Print
 
 Outputs the current settings file.

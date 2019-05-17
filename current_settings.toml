@@ -1,6 +1,6 @@
 
 [displays]
-  current = "home_1440-HDMI-0-L_1440-DP-4-R.sh"
+  current = "home_hdmi-0_dp-4_dvi-d-0.sh"
   location = "/home/han/.screenlayout"
 
 [sound]
