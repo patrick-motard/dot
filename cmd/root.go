@@ -3,6 +3,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/user"
 
@@ -21,6 +22,26 @@ var log = logrus.New()
 
 var cfgFile string
 var settings lib.Settings
+
+type Theme struct {
+	Name string
+	Bars []string
+}
+
+type config struct {
+	Displays struct {
+		Current  string
+		Location string
+	}
+	Sound struct {
+		Port string
+	}
+	Polybar struct {
+		Themes []Theme
+	}
+}
+
+var Config config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -77,6 +98,10 @@ func initConfig() {
 	if err != nil {
 		log.Errorf("Failed to parse config file %s\nError Message: %s", cfgFile, err)
 		os.Exit(1)
+	}
+	uErr := viper.Unmarshal(&Config)
+	if uErr != nil {
+		log.Fatalf("Unable to decode config into struct, %v", uErr)
 	}
 }
 

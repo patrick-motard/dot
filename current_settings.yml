@@ -6,10 +6,10 @@ sound:
   port: "analog-output-lineout"
 polybar:
   themes:
-    - name: "nord-arrow"
-      bars: # if empty, dot will load all bars found in the theme.
-    - name: "nord"
-      bars: #
-        - "main.top.middle"
-        - "left.top.middle"
-        - "right.top.middle"
+  - name: "nord-arrow"
+    bars: # if empty, dot will load all bars found in the theme.
+  - name: "nord"
+    bars: #
+      - "main.top.middle"
+      - "left.top.middle"
+      - "right.top.middle"
