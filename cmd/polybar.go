@@ -8,6 +8,7 @@ import (
 	"github.com/BurntSushi/xgb/randr"
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"os"
 	"os/exec"
 	"sort"
@@ -37,10 +38,18 @@ type display struct {
 	active    bool
 }
 
+var theme string
+
 func init() {
+	polybarCmd.Flags().StringVarP(&theme, "theme", "t", "", "Specify theme by name. This will persist.")
+	viper.BindPFlag("Polybar.Theme", polybarCmd.Flags().Lookup("theme"))
 	rootCmd.AddCommand(polybarCmd)
 }
 func main() {
+	// save the new theme if it is set
+	// viper.WriteConfig()
+	fmt.Println(Config.Polybar.Theme)
+	fmt.Println(theme)
 	X, _ := xgb.NewConn()
 	err := randr.Init(X)
 	if err != nil {
@@ -133,28 +142,58 @@ func main() {
 
 	}
 
+	fmt.Println(Config.Polybar.Theme)
 	// start polybar
-	polybarEnvVars = append(polybarEnvVars, "polybar_theme=/home/han/.config/polybar/nord/config")
+	themePath := fmt.Sprintf("polybar_theme=/home/han/.config/polybar/%s/config", Config.Polybar.Theme)
+	polybarEnvVars = append(polybarEnvVars, themePath)
+	fmt.Println(polybarEnvVars)
 	newEnv := append(os.Environ(), polybarEnvVars...)
-	bars := []string{
-		"main.top.middle",
-		"left.top.middle",
-		"right.top.middle",
-	}
-	// var done chan string
-	done := make(chan string, 3)
-	go runAllPolybar(newEnv, bars, done)
-	for {
-		v, ok := <-done
-		if ok == false {
-			break
+	var theme Theme
+	for _, t := range Config.Polybar.Themes {
+		if Config.Polybar.Theme == t.Name {
+			theme = t
+			// fmt.Println("hello")
 		}
-		fmt.Println("Received: ", v, ok)
 	}
-	// hack to allow goroutines to start
-	//TODO: replace with channels
-	// time.Sleep(1 * time.Second)
+	if theme.Name == "" {
+		log.Error("Theme not found, exiting.")
+		os.Exit(1)
+	}
+	bars := theme.Bars
+
+	// bars := []string{
+	// 	"main.top.middle",
+	// 	"left.top.middle",
+	// 	"right.top.middle",
+	// }
+	// fmt.Println()
+	// go runStuff(newEnv, bars)
+	// time.Sleep(5 * time.Second)
+	// fmt.Println("main terminated")
+	// }
+
+	// func runStuff(envs, bars []string) {
+
+	// fmt.Printf("%+v\n", &Config)
+	for _, bar := range bars {
+		polybar(newEnv, bar)
+	}
 }
+
+// // var done chan string
+// done := make(chan string, 3)
+// go runAllPolybar(newEnv, bars, done)
+// for {
+// 	v, ok := <-done
+// 	if ok == false {
+// 		break
+// 	}
+// 	fmt.Println("Received: ", v, ok)
+// }
+// // hack to allow goroutines to start
+// // TODO: replace with channels
+// // time.Sleep(1 * time.Second)
+// }
 
 func runAllPolybar(envs, bars []string, ch chan string) {
 	for _, bar := range bars {
@@ -163,17 +202,22 @@ func runAllPolybar(envs, bars []string, ch chan string) {
 	}
 	close(ch)
 }
+
 func polybar(env []string, bar string) string {
+	log.Printf("Starting bar %s", bar)
 	s := fmt.Sprintf("polybar -r %s", bar)
 	cmd := exec.Command("bash", "-c", s)
 	cmd.Env = env
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		// log.Fatal(err)
-		return err.Error()
-		// fmt.Println(err)
-	}
-	return string(out)
+	cmd.Start()
+	// out, err := cmd.CombinedOutput()
+	// if err != nil {
+	// 	// log.Fatal(err)
+	// 	return err.Error()
+	// 	// fmt.Println(err)
+	// }
+	// cmd.Wait()
+	return fmt.Sprintf("Finished bar %s", bar)
+	// return string(out)
 	// fmt.Println(string(out))
 	// done <- string(out)
 }

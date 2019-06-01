@@ -3,7 +3,7 @@
 package cmd
 
 import (
-	"fmt"
+	// "fmt"
 	"os"
 	"os/user"
 
@@ -37,6 +37,7 @@ type config struct {
 		Port string
 	}
 	Polybar struct {
+		Theme  string
 		Themes []Theme
 	}
 }
@@ -103,6 +104,7 @@ func initConfig() {
 	if uErr != nil {
 		log.Fatalf("Unable to decode config into struct, %v", uErr)
 	}
+	// fmt.Println()
 }
 
 // example of setting a value and writing config:
