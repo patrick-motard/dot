@@ -14,14 +14,18 @@ import (
 	"sort"
 	// "time"
 	// "os"
+	"bufio"
+	"regexp"
+	"strings"
 )
 
+var ThemePath string
 var polybarCmd = &cobra.Command{
 	Use:   "polybar",
 	Short: "Loads polybar themes and bars.",
 	Long:  "TODO: add long description",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("You ran dot with the 'polybar' arguement.")
+		// fmt.Println("You ran dot with the 'polybar' arguement.")
 		main()
 	},
 }
@@ -46,10 +50,9 @@ func init() {
 	rootCmd.AddCommand(polybarCmd)
 }
 func main() {
+	ThemePath = fmt.Sprintf("%s/.config/polybar/%s/config", Home, Config.Polybar.Theme)
 	// save the new theme if it is set
 	// viper.WriteConfig()
-	fmt.Println(Config.Polybar.Theme)
-	fmt.Println(theme)
 	X, _ := xgb.NewConn()
 	err := randr.Init(X)
 	if err != nil {
@@ -142,58 +145,54 @@ func main() {
 
 	}
 
-	fmt.Println(Config.Polybar.Theme)
 	// start polybar
-	themePath := fmt.Sprintf("polybar_theme=/home/han/.config/polybar/%s/config", Config.Polybar.Theme)
-	polybarEnvVars = append(polybarEnvVars, themePath)
-	fmt.Println(polybarEnvVars)
+	t := fmt.Sprintf("polybar_theme=%s", ThemePath)
+	polybarEnvVars = append(polybarEnvVars, t)
 	newEnv := append(os.Environ(), polybarEnvVars...)
 	var theme Theme
 	for _, t := range Config.Polybar.Themes {
 		if Config.Polybar.Theme == t.Name {
 			theme = t
-			// fmt.Println("hello")
 		}
 	}
 	if theme.Name == "" {
 		log.Error("Theme not found, exiting.")
 		os.Exit(1)
 	}
-	bars := theme.Bars
-
-	// bars := []string{
-	// 	"main.top.middle",
-	// 	"left.top.middle",
-	// 	"right.top.middle",
-	// }
-	// fmt.Println()
-	// go runStuff(newEnv, bars)
-	// time.Sleep(5 * time.Second)
-	// fmt.Println("main terminated")
-	// }
-
-	// func runStuff(envs, bars []string) {
-
-	// fmt.Printf("%+v\n", &Config)
+	var bars []string
+	if len(theme.Bars) == 0 {
+		bars = getBars(theme, ThemePath)
+	} else {
+		bars = theme.Bars
+	}
 	for _, bar := range bars {
 		polybar(newEnv, bar)
 	}
 }
 
-// // var done chan string
-// done := make(chan string, 3)
-// go runAllPolybar(newEnv, bars, done)
-// for {
-// 	v, ok := <-done
-// 	if ok == false {
-// 		break
-// 	}
-// 	fmt.Println("Received: ", v, ok)
-// }
-// // hack to allow goroutines to start
-// // TODO: replace with channels
-// // time.Sleep(1 * time.Second)
-// }
+func getBars(theme Theme, path string) []string {
+	f, err := os.Open(path)
+	if err != nil {
+		fmt.Println(ThemePath)
+		log.Fatal(err)
+	}
+	defer f.Close()
+	var b []string
+	scanner := bufio.NewScanner(f)
+	// example: [bar/SOME.BAR] -> SOME.BAR
+	re := regexp.MustCompile(`^\[bar\/(.*?)\]`)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), "[bar/") {
+			fmt.Println(scanner.Text())
+			m := re.FindSubmatch(scanner.Bytes())
+			b = append(b, string(m[1]))
+		}
+	}
+	for _, z := range b {
+		fmt.Println(z)
+	}
+	return b
+}
 
 func runAllPolybar(envs, bars []string, ch chan string) {
 	for _, bar := range bars {
@@ -209,15 +208,5 @@ func polybar(env []string, bar string) string {
 	cmd := exec.Command("bash", "-c", s)
 	cmd.Env = env
 	cmd.Start()
-	// out, err := cmd.CombinedOutput()
-	// if err != nil {
-	// 	// log.Fatal(err)
-	// 	return err.Error()
-	// 	// fmt.Println(err)
-	// }
-	// cmd.Wait()
 	return fmt.Sprintf("Finished bar %s", bar)
-	// return string(out)
-	// fmt.Println(string(out))
-	// done <- string(out)
 }

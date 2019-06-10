@@ -4,11 +4,13 @@ displays:
 polybar:
   theme: nord
   themes:
-  - bars:
-    - main
-    - left
-    - right
-    name: nord-arrow
+  - name: nord-arrow
+    # bars are optional, if you leave them blank, dot will load all
+    # bars found in the theme.
+    # bars:
+    # - main
+    # - left
+    # - right
   - bars:
     - main.top.middle
     - left.top.middle
