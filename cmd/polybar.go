@@ -25,7 +25,11 @@ var polybarCmd = &cobra.Command{
 	Short: "Loads polybar themes and bars.",
 	Long:  "TODO: add long description",
 	Run: func(cmd *cobra.Command, args []string) {
-		// fmt.Println("You ran dot with the 'polybar' arguement.")
+		ThemePath = fmt.Sprintf("%s/.config/polybar/%s/config", Home, Config.Polybar.Theme)
+		if list {
+			listThemes()
+			os.Exit(0)
+		}
 		main()
 	},
 }
@@ -43,14 +47,20 @@ type display struct {
 }
 
 var theme string
+var list bool
 
 func init() {
-	polybarCmd.Flags().StringVarP(&theme, "theme", "t", "", "Specify theme by name. This will persist.")
+	polybarCmd.Flags().StringVarP(&theme, "theme", "t", "", "Load a Polybar theme by name. The theme specified will be saved to dot's current_settings.")
+	polybarCmd.Flags().BoolP("list", "l", list, "Lists all themes found on the system.")
 	viper.BindPFlag("Polybar.Theme", polybarCmd.Flags().Lookup("theme"))
 	rootCmd.AddCommand(polybarCmd)
 }
+
+func listThemes() {
+
+}
+
 func main() {
-	ThemePath = fmt.Sprintf("%s/.config/polybar/%s/config", Home, Config.Polybar.Theme)
 	// save the new theme if it is set
 	// viper.WriteConfig()
 	X, _ := xgb.NewConn()
