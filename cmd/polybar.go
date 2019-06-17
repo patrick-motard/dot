@@ -52,6 +52,8 @@ var list bool
 func init() {
 	polybarCmd.Flags().StringVarP(&theme, "theme", "t", "", "Load a Polybar theme by name. The theme specified will be saved to dot's current_settings.")
 	polybarCmd.Flags().BoolP("list", "l", list, "Lists all themes found on the system.")
+	// TODO: validate theme in cs (current_settings.yml) exists on filesystem
+	// TODO: if theme passed in exists and is different than the current theme, write it to cs
 	viper.BindPFlag("Polybar.Theme", polybarCmd.Flags().Lookup("theme"))
 	rootCmd.AddCommand(polybarCmd)
 }
@@ -127,7 +129,7 @@ func main() {
 	sort.Slice(displays, func(i, j int) bool {
 		return displays[i].xposition < displays[j].xposition
 	})
-	fmt.Printf("%+v\n", displays)
+	// fmt.Printf("%+v\n", displays)
 
 	// kill polybar
 	cmd := exec.Command("sh", "-c", "killall -q polybar")
@@ -160,6 +162,7 @@ func main() {
 	polybarEnvVars = append(polybarEnvVars, t)
 	newEnv := append(os.Environ(), polybarEnvVars...)
 	var theme Theme
+	// find the theme object for the given theme
 	for _, t := range Config.Polybar.Themes {
 		if Config.Polybar.Theme == t.Name {
 			theme = t
@@ -170,11 +173,13 @@ func main() {
 		os.Exit(1)
 	}
 	var bars []string
+	// load bars from theme's .rasi file if none were specified in current_settings.yml
 	if len(theme.Bars) == 0 {
 		bars = getBars(theme, ThemePath)
 	} else {
 		bars = theme.Bars
 	}
+	// start all the bars
 	for _, bar := range bars {
 		polybar(newEnv, bar)
 	}
@@ -193,14 +198,14 @@ func getBars(theme Theme, path string) []string {
 	re := regexp.MustCompile(`^\[bar\/(.*?)\]`)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "[bar/") {
-			fmt.Println(scanner.Text())
+			// fmt.Println(scanner.Text())
 			m := re.FindSubmatch(scanner.Bytes())
 			b = append(b, string(m[1]))
 		}
 	}
-	for _, z := range b {
-		fmt.Println(z)
-	}
+	// for _, z := range b {
+	// 	fmt.Println(z)
+	// }
 	return b
 }
 
