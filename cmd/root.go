@@ -20,6 +20,7 @@ var Home string
 
 var log = logrus.New()
 
+// TODO: make this path a public variable
 var cfgFile string
 var settings lib.Settings
 
@@ -37,8 +38,9 @@ type config struct {
 		Port string
 	}
 	Polybar struct {
-		Theme  string
-		Themes []Theme
+		Theme           string
+		ThemesDirectory string `mapstructure:"themes_directory"`
+		Themes          []Theme
 	}
 }
 

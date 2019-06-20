@@ -1,38 +1,23 @@
 // Copyright © 2018 Patrick Motard <motard19@gmail.com>
+// TODO: add i3wm dimensions to bar settings
 
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/randr"
 	"github.com/BurntSushi/xgb/xproto"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"os"
 	"os/exec"
-	"sort"
-	// "time"
-	// "os"
-	"bufio"
 	"regexp"
+	"sort"
 	"strings"
 )
-
-var ThemePath string
-var polybarCmd = &cobra.Command{
-	Use:   "polybar",
-	Short: "Loads polybar themes and bars.",
-	Long:  "TODO: add long description",
-	Run: func(cmd *cobra.Command, args []string) {
-		ThemePath = fmt.Sprintf("%s/.config/polybar/%s/config", Home, Config.Polybar.Theme)
-		if list {
-			listThemes()
-			os.Exit(0)
-		}
-		main()
-	},
-}
 
 type display struct {
 	name string // example: DP-4 or HDMI-1
@@ -46,38 +31,99 @@ type display struct {
 	active    bool
 }
 
-var theme string
-var list bool
+var (
+	_theme                 string
+	InstalledPolybarThemes []string
+	FullThemePath          string
+	FullThemesPath         string
+)
+
+var polybarCmd = &cobra.Command{
+	Use:   "polybar",
+	Short: "Loads polybar themes and bars.",
+	Long:  "TODO: add long description",
+	Run: func(cmd *cobra.Command, args []string) {
+		FullThemesPath = Home + "/" + Config.Polybar.ThemesDirectory
+		FullThemePath = FullThemesPath + "/" + _theme + "/config"
+		validateTheme()
+		if viper.GetBool("list") == true {
+			listThemes()
+			os.Exit(0)
+		}
+		main()
+	},
+}
 
 func init() {
-	polybarCmd.Flags().StringVarP(&theme, "theme", "t", "", "Load a Polybar theme by name. The theme specified will be saved to dot's current_settings.")
-	polybarCmd.Flags().BoolP("list", "l", list, "Lists all themes found on the system.")
-	// TODO: validate theme in cs (current_settings.yml) exists on filesystem
-	// TODO: if theme passed in exists and is different than the current theme, write it to cs
-	viper.BindPFlag("Polybar.Theme", polybarCmd.Flags().Lookup("theme"))
+	polybarCmd.Flags().StringVarP(&_theme, "theme", "t", "", "Load a Polybar theme by name. The theme specified will be saved to dot's current_settings.")
+	polybarCmd.Flags().BoolP("list", "l", false, "Lists all themes found on the system.")
+	viper.BindPFlag("polybar.theme", polybarCmd.Flags().Lookup("theme"))
+	// TODO: This is putting list on viper, which is then written to file
+	// either figure out how to unmarshal Config and overwrite current settings with it,
+	// or figure out how to reference flags without viper. 'list=true' doesn't belong in current_settings
+	viper.BindPFlag("list", polybarCmd.Flags().Lookup("list"))
 	rootCmd.AddCommand(polybarCmd)
 }
 
 func listThemes() {
+	for _, t := range InstalledPolybarThemes {
+		fmt.Println(t)
+	}
+}
 
+func validateTheme() {
+	if Config.Polybar.ThemesDirectory == "" {
+		log.Fatalln("Please set polybar.themes_directory in current_settings.yml")
+	}
+	// TODO: validate theme in cs (current_settings.yml) exists on filesystem
+	// TODO: if theme passed in exists and is different than the current theme, write it to cs
+
+	// Look up installed themes.
+	// A theme is considered to be installed if there is a directory with the themes name,
+	// in the themes folder.
+	viper.Set("polybar.theme", _theme)
+	Config.Polybar.Theme = _theme
+	t := false
+
+	f, err := ioutil.ReadDir(FullThemesPath)
+	if err != nil {
+		log.Errorln(err)
+		log.Fatalf("Failed to read themes from %s", FullThemesPath)
+	}
+
+	for _, x := range f {
+		if x.IsDir() && x.Name() != "global" {
+			if _theme == x.Name() {
+				t = true
+			}
+			InstalledPolybarThemes = append(InstalledPolybarThemes, x.Name())
+		}
+	}
+	if t {
+		viper.WriteConfig()
+	}
 }
 
 func main() {
-	// save the new theme if it is set
-	// viper.WriteConfig()
+	// connect to X server
 	X, _ := xgb.NewConn()
 	err := randr.Init(X)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// get root node
 	root := xproto.Setup(X).DefaultScreen(X).Root
+	// get the resources of the screen
 	resources, err := randr.GetScreenResources(X, root).Reply()
 	if err != nil {
 		log.Fatal(err)
 	}
-	// fmt.Printf("OUTPUT!! %+v\n", root)
+	// get the primary output
 	primaryOutput, _ := randr.GetOutputPrimary(X, root).Reply()
+
 	var displays []display
+	// go through the connected outputs and get their position and resolution
 	for _, output := range resources.Outputs {
 		info, err := randr.GetOutputInfo(X, output, 0).Reply()
 		if err != nil {
@@ -93,7 +139,6 @@ func main() {
 				// "BadCrtc" happens when attempting to get
 				// a crtc for an output is disabled (inactive).
 				// TODO: figure out a better way to identify active vs inactive
-
 				d.active = false
 			} else {
 				d.active = true
@@ -116,28 +161,24 @@ func main() {
 			displays = append(displays, d)
 		}
 	}
-	// for _, crtc := range resources.Crtcs {
-	// 	info, err := randr.GetCrtcInfo(X, crtc, 0).Reply()
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	// fmt.Println(info.Help)
-	// 	// fmt.Println(string(info))
-	// 	fmt.Printf("X: %d, Y: %d, Width: %d, Height: %d, Status: %d\n",
-	// 		info.X, info.Y, info.Width, info.Height, info.Status)
-	// }
+
+	// order the displays by their position, left to right.
 	sort.Slice(displays, func(i, j int) bool {
 		return displays[i].xposition < displays[j].xposition
 	})
-	// fmt.Printf("%+v\n", displays)
 
-	// kill polybar
+	// kill all polybar sessions polybar
 	cmd := exec.Command("sh", "-c", "killall -q polybar")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Infoln("Failed to kill polybar")
+		// TODO: handle case where polybar isn't running yet
+		// log.Fatalln("Failed to kill polybar")
+		log.Println("Failed to kill polybar")
 	}
 	fmt.Println(string(out))
+
+	// create the env vars we'll hand to polybar
+	// polybar needs to know the theme, and what the left, right and main monitor are
 	var polybarEnvVars []string
 	for i, d := range displays {
 		// skip inactive monitors
@@ -154,28 +195,34 @@ func main() {
 			s := fmt.Sprintf("MONITOR_RIGHT=%s", d.name)
 			polybarEnvVars = append(polybarEnvVars, s)
 		}
-
 	}
-
-	// start polybar
-	t := fmt.Sprintf("polybar_theme=%s", ThemePath)
+	// add the theme to the environment
+	t := fmt.Sprintf("polybar_theme=%s", FullThemePath)
+	fmt.Println(t)
 	polybarEnvVars = append(polybarEnvVars, t)
+
+	// create a new array of env vars, appending the current environment
+	// with the env vars created above
 	newEnv := append(os.Environ(), polybarEnvVars...)
+
+	// get the theme object for current theme from current_settings
 	var theme Theme
-	// find the theme object for the given theme
+	// TODO: maybe switch Themes to a map so i don't have to loop
 	for _, t := range Config.Polybar.Themes {
 		if Config.Polybar.Theme == t.Name {
 			theme = t
 		}
 	}
+	// Exit if it fails to find the theme object
 	if theme.Name == "" {
 		log.Error("Theme not found, exiting.")
 		os.Exit(1)
 	}
-	var bars []string
+
 	// load bars from theme's .rasi file if none were specified in current_settings.yml
+	var bars []string
 	if len(theme.Bars) == 0 {
-		bars = getBars(theme, ThemePath)
+		bars = getBars(theme, FullThemePath)
 	} else {
 		bars = theme.Bars
 	}
@@ -188,7 +235,6 @@ func main() {
 func getBars(theme Theme, path string) []string {
 	f, err := os.Open(path)
 	if err != nil {
-		fmt.Println(ThemePath)
 		log.Fatal(err)
 	}
 	defer f.Close()
@@ -198,23 +244,15 @@ func getBars(theme Theme, path string) []string {
 	re := regexp.MustCompile(`^\[bar\/(.*?)\]`)
 	for scanner.Scan() {
 		if strings.Contains(scanner.Text(), "[bar/") {
-			// fmt.Println(scanner.Text())
 			m := re.FindSubmatch(scanner.Bytes())
 			b = append(b, string(m[1]))
 		}
 	}
-	// for _, z := range b {
-	// 	fmt.Println(z)
-	// }
-	return b
-}
-
-func runAllPolybar(envs, bars []string, ch chan string) {
-	for _, bar := range bars {
-		fmt.Println("Got here")
-		ch <- polybar(envs, bar)
+	if len(b) == 0 {
+		// TODO use a public variable to reference the path to current_settings.yml
+		log.Fatalf("No bars found in:\n - %s\n - %s", FullThemePath, Home+"/code/dot/current_settings.yml")
 	}
-	close(ch)
+	return b
 }
 
 func polybar(env []string, bar string) string {

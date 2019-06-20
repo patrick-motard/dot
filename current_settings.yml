@@ -1,21 +1,16 @@
 displays:
   current: home_hdmi-0_dp-4_dvi-d-0.sh
   location: /home/han/.screenlayout
+list: false
 polybar:
-  themes_directory: .config/polybar/
-  theme: nord
+  theme: nord-arrow
   themes:
   - name: nord-arrow
-    # bars are optional, if you leave them blank, dot will load all
-    # bars found in the theme.
-    # bars:
-    # - main
-    # - left
-    # - right
   - bars:
     - main.top.middle
     - left.top.middle
     - right.top.middle
     name: nord
+  themes_directory: .config/polybar/themes
 sound:
   port: analog-output-lineout
