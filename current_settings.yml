@@ -1,6 +1,6 @@
 displays:
   current: home_hdmi-0_dp-4_dvi-d-0.sh
-  location: /home/han/.screenlayout
+  location: .screenlayout
 list: false
 polybar:
   theme: nord-arrow

@@ -27,7 +27,7 @@ var displaysListCmd = &cobra.Command{
 }
 
 func DisplaysLocation() ([]string, error) {
-	files, readErr := ioutil.ReadDir(viper.GetString("displays.location"))
+	files, readErr := ioutil.ReadDir(Home + "/" + viper.GetString("displays.location"))
 	var filenames []string
 	for _, file := range files {
 		filenames = append(filenames, file.Name())
