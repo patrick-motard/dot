@@ -73,7 +73,7 @@ func init() {
 	}
 	Home = usr.HomeDir
 	if os.Getenv("DEBUG") != "true" {
-		log.SetLevel(logrus.WarnLevel)
+		log.SetLevel(logrus.InfoLevel)
 	}
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.dot.yaml)")

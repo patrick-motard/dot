@@ -3,11 +3,13 @@ displays:
   location: .screenlayout
 list: false
 polybar:
-  theme: nord-arrow
+  theme: nord
   themes:
   - name: nord-arrow
   - bars:
     - main.top.middle
+    - main.top.left
+    - main.top.right
     - left.top.middle
     - right.top.middle
     name: nord

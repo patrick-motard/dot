@@ -198,7 +198,7 @@ func main() {
 	}
 	// add the theme to the environment
 	t := fmt.Sprintf("polybar_theme=%s", FullThemePath)
-	fmt.Println(t)
+	log.Infoln(t)
 	polybarEnvVars = append(polybarEnvVars, t)
 
 	// create a new array of env vars, appending the current environment
@@ -222,12 +222,15 @@ func main() {
 	// load bars from theme's .rasi file if none were specified in current_settings.yml
 	var bars []string
 	if len(theme.Bars) == 0 {
+		log.Infoln("No bars specified in current-settings file. Auto-detecting bars...")
 		bars = getBars(theme, FullThemePath)
 	} else {
+		log.Infoln("Bars specified in current-settings file.")
 		bars = theme.Bars
 	}
 	// start all the bars
 	for _, bar := range bars {
+		log.Infoln(fmt.Sprintf("Loading bar '%s'", bar))
 		polybar(newEnv, bar)
 	}
 }
@@ -256,7 +259,6 @@ func getBars(theme Theme, path string) []string {
 }
 
 func polybar(env []string, bar string) string {
-	log.Printf("Starting bar %s", bar)
 	s := fmt.Sprintf("polybar -r %s", bar)
 	cmd := exec.Command("bash", "-c", s)
 	cmd.Env = env
