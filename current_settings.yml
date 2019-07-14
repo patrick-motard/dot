@@ -1,9 +1,15 @@
 displays:
-  current: home_hdmi-0_dp-4_dvi-d-0.sh
+  current: home_dp-4_dvi-d-0-hdmi-0.sh
   location: .screenlayout
-list: false
+i3_wm:
+  default_gaps:
+    bottom: 10
+    left: 10
+    right: 10
+    top: 10
+  settings_file: .config/i3/config
 polybar:
-  theme: nord
+  theme: nord-arrow
   themes:
   - name: nord-arrow
   - bars:
@@ -12,6 +18,8 @@ polybar:
     - main.top.right
     - left.top.middle
     - right.top.middle
+    gaps:
+      top: 80
     name: nord
   themes_directory: .config/polybar/themes
 sound:

@@ -27,6 +27,18 @@ var settings lib.Settings
 type Theme struct {
 	Name string
 	Bars []string
+	Gaps I3Gaps
+}
+
+type I3Gaps struct {
+	Top    string
+	Bottom string
+	Left   string
+	Right  string
+}
+type I3wm struct {
+	DefaultGaps  I3Gaps `mapstructure:"default_gaps"`
+	SettingsFile string `mapstructure:"settings_file"`
 }
 
 type config struct {
@@ -37,6 +49,7 @@ type config struct {
 	Sound struct {
 		Port string
 	}
+	I3wm    I3wm `mapstructure:"i3_wm"`
 	Polybar struct {
 		Theme           string
 		ThemesDirectory string `mapstructure:"themes_directory"`
