@@ -1,9 +1,0 @@
-[displays]
-  # name of RandR script currently applied to the system
-  current = "home_1440-HDMI-0-L_1440-DP-4-R.sh"
-  # location of current RandR script
-  location = "/home/han/.screenlayout"
-
-[sound]
-  # audio port to output audio through (headphones vs speakers
-  port = "analog-output-lineout"
