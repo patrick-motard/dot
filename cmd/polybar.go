@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/BurntSushi/xgb"
 	"github.com/BurntSushi/xgb/randr"
@@ -13,12 +14,15 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.i3wm.org/i3"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
+	// "time"
 )
 
 type display struct {
@@ -261,10 +265,17 @@ func main() {
 		bars = theme.Bars
 	}
 	// start all the bars
+	var wg sync.WaitGroup
 	for _, bar := range bars {
 		log.Infoln(fmt.Sprintf("Loading bar '%s'", bar))
-		polybar(newEnv, bar)
+		wg.Add(1)
+		go func(b string) {
+			defer wg.Done()
+			polybar(newEnv, b)
+		}(bar)
 	}
+	wg.Wait()
+
 	// g := getDefaultI3Gaps()
 	adjustI3Gaps(theme.Gaps)
 }
@@ -316,6 +327,7 @@ func adjustI3Gaps(g I3Gaps) {
 // 	}
 // 	return g
 // }
+
 func getBars(theme Theme, path string) []string {
 	f, err := os.Open(path)
 	if err != nil {
@@ -339,10 +351,34 @@ func getBars(theme Theme, path string) []string {
 	return b
 }
 
-func polybar(env []string, bar string) string {
+func polybar(env []string, bar string) {
+
 	s := fmt.Sprintf("polybar -r %s", bar)
 	cmd := exec.Command("bash", "-c", s)
 	cmd.Env = env
-	cmd.Start()
-	return fmt.Sprintf("Finished bar %s", bar)
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+	stdoutIn, _ := cmd.StdoutPipe()
+	stderrIn, _ := cmd.StderrPipe()
+
+	var errStdout, errStderr error
+	stdout := io.MultiWriter(os.Stdout, &stdoutBuf)
+	stderr := io.MultiWriter(os.Stderr, &stderrBuf)
+	err := cmd.Start()
+	if err != nil {
+		log.Errorf("cmd.Start() failed with '%s'\n", err)
+	}
+
+	_, errStdout = io.Copy(stdout, stdoutIn)
+	_, errStderr = io.Copy(stderr, stderrIn)
+
+	err = cmd.Wait()
+	if err != nil {
+		log.Errorf("Starting bar %s failed with %s\n", bar, err)
+	}
+	if errStdout != nil || errStderr != nil {
+		log.Error("failed to capture stdout or stderr\n")
+	}
+	outStr, errStr := string(stdoutBuf.Bytes()), string(stderrBuf.Bytes())
+	fmt.Printf("stdout:\n%s\nerr:\n%s\n", outStr, errStr)
 }
