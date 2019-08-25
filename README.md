@@ -1,5 +1,8 @@
 # Dot
 
+[![Build Status](https://travis-ci.com/patrick-motard/dot.svg?branch=master)](https://travis-ci.com/patrick-motard/dot)
+
+
 Used by [dotfiles](https://github.com/patrick-motard/dotfiles). In active development. Many things will break. Often. More documentation coming soon.
 
 ## Development
