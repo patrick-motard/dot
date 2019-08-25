@@ -1,0 +1,4 @@
+language: go
+go:
+  # compiles against the most recent version of go 1
+  - 1.x
