@@ -6,10 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// screenCmd represents the screen command
 var displaysCmd = &cobra.Command{
 	Use:   "displays",
-	Short: "All commands for interacting with your display displays",
+	Short: "All commands for interacting with your displays",
 	Long: `Description: The 'display' command contains all the commands for interacting with your display displays.
 
 Scripts are from 'displays.location' in your config. I like to use ~/.screenlayout/
@@ -28,14 +27,4 @@ fix for right now. You will have to recreate the layout and re-run 'dot screen s
 
 func init() {
 	rootCmd.AddCommand(displaysCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// screenCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// screenCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -5,9 +5,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
 	"io/ioutil"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 var load string
@@ -21,7 +22,7 @@ func check(e error) {
 
 var i3Cmd = &cobra.Command{
 	Use:       "i3",
-	Short:     "A brief description of your command",
+	Short:     "This command is a work in progress. Come back later. :)",
 	Long:      ``,
 	ValidArgs: []string{"load"},
 	Args: func(cmd *cobra.Command, args []string) error {
@@ -44,16 +45,5 @@ var i3Cmd = &cobra.Command{
 }
 
 func init() {
-	// i3Cmd.Flags().StringVarP(&load, "load", "", "", "load i3")
 	rootCmd.AddCommand(i3Cmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// i3Cmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// i3Cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

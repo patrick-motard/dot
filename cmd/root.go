@@ -3,17 +3,13 @@
 package cmd
 
 import (
-	// "fmt"
 	"os"
 	"os/user"
 
-	// homedir "github.com/mitchellh/go-homedir"
 	"github.com/patrick-motard/dot/lib"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	// "fmt"
-	"github.com/sirupsen/logrus"
 )
 
 var Home string
@@ -100,15 +96,10 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 
 	} else {
-		// Find home directory.
-		// home, err := homedir.Dir()
-		// if err != nil {
-		// 	log.Error(err)
-		// 	os.Exit(1)
-		// }
 		cfgFile = Home + "/code/dot/current_settings.yml"
 		viper.SetConfigFile(cfgFile)
 	}
+
 	viper.AutomaticEnv() // read in environment variables that match
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -119,7 +110,6 @@ func initConfig() {
 	if uErr != nil {
 		log.Fatalf("Unable to decode config into struct, %v", uErr)
 	}
-	// fmt.Println()
 }
 
 // example of setting a value and writing config:
