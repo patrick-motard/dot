@@ -265,6 +265,7 @@ func main() {
 		log.Infoln("Bars specified in current-settings file...")
 		bars = theme.Bars
 	}
+	adjustI3Gaps(theme.Gaps)
 	// start all the bars
 	var wg sync.WaitGroup
 	for _, bar := range bars {
@@ -278,7 +279,6 @@ func main() {
 	wg.Wait()
 
 	// g := getDefaultI3Gaps()
-	adjustI3Gaps(theme.Gaps)
 }
 
 // Polybar themes can specify the gaps between i3 and the bar(s). This is useful
