@@ -27,7 +27,7 @@ var i3Cmd = &cobra.Command{
 	ValidArgs: []string{"load"},
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return errors.New("Requires exactly 1 arg.")
+			return errors.New("requires exactly 1 arg")
 		}
 		return cobra.OnlyValidArgs(cmd, args)
 	},

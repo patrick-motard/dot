@@ -9,7 +9,7 @@ i3_wm:
     top: 10
   settings_file: .config/i3/config
 polybar:
-  theme: nord-arrow
+  theme: nord
   themes:
   - name: nord-arrow
   - bars:

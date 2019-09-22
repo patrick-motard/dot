@@ -7,13 +7,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/BurntSushi/xgb"
-	"github.com/BurntSushi/xgb/randr"
-	"github.com/BurntSushi/xgb/xproto"
-	"github.com/patrick-motard/rofigo"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.i3wm.org/i3"
 	"io"
 	"io/ioutil"
 	"os"
@@ -22,6 +15,14 @@ import (
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/BurntSushi/xgb"
+	"github.com/BurntSushi/xgb/randr"
+	"github.com/BurntSushi/xgb/xproto"
+	"github.com/patrick-motard/rofigo"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"go.i3wm.org/i3"
 	// "time"
 )
 
