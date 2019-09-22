@@ -5,19 +5,26 @@ package cmd
 import (
 	// "errors"
 	"fmt"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/manifoldco/promptui"
+	"github.com/patrick-motard/rofigo"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var _rofi bool
 
 // selectCmd represents the select command
 var displaysSelectCmd = &cobra.Command{
 	Use:   "select",
 	Short: "Interactively select an RandR script from list apply it to your system.",
-	Long: `Example:
+	Long: `Interactively select an RandR script from list apply it to your system.
+You can select the display via rofi by setting the --rofi/-r flag.
+
+Example (in command line):
 dot screen select
 Use the arrow keys to navigate: ↓ ↑ → ←
 ? Pick one:
@@ -32,23 +39,26 @@ Dot will remember what you chose, even if you log out or reboot.
 `,
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			fmt.Println("No arguments allowed for this command, exiting.")
-			os.Exit(1)
-		}
 		files, err := DisplaysLocation()
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		prompt := promptui.Select{
-			Label: "Pick one",
-			Items: files,
-		}
-		_, selection, err := prompt.Run()
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
+		var selection string
+		if _rofi == true {
+			v := rofigo.New("xrandr script", files...)
+			v.Show()
+			selection = v.Selection
+		} else {
+			prompt := promptui.Select{
+				Label: "Pick one",
+				Items: files,
+			}
+			_, selection, err = prompt.Run()
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
 		}
 		runErr := RunDisplaysScript(selection)
 		if runErr != nil {
@@ -66,7 +76,7 @@ Dot will remember what you chose, even if you log out or reboot.
 
 func RunDisplaysScript(scriptName string) error {
 	location := viper.GetString("displays.location")
-	fullPath := strings.Join([]string{location, scriptName}, "/")
+	fullPath := strings.Join([]string{Home, "/", location, scriptName}, "/")
 	arandrCmd := exec.Command("/bin/sh", fullPath)
 	out, err := arandrCmd.CombinedOutput()
 	fmt.Println(string(out))
@@ -74,6 +84,7 @@ func RunDisplaysScript(scriptName string) error {
 }
 func init() {
 	displaysCmd.AddCommand(displaysSelectCmd)
+	displaysSelectCmd.Flags().BoolVarP(&_rofi, "rofi", "r", false, "Use rofi to select display configuration.")
 
 	// Here you will define your flags and configuration settings.
 

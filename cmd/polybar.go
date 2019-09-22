@@ -1,5 +1,4 @@
 // Copyright © 2018 Patrick Motard <motard19@gmail.com>
-// TODO: add i3wm dimensions to bar settings
 
 package cmd
 
@@ -12,31 +11,15 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
-	"sort"
 	"strings"
 	"sync"
 
-	"github.com/BurntSushi/xgb"
-	"github.com/BurntSushi/xgb/randr"
-	"github.com/BurntSushi/xgb/xproto"
 	"github.com/patrick-motard/rofigo"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.i3wm.org/i3"
 	// "time"
 )
-
-type display struct {
-	name string // example: DP-4 or HDMI-1
-	// Position is where the display is relative to other displays on the screen.
-	// Screens are comprised of one or more displays.
-	xposition int16  // the x coordinate of the display on the screen
-	yposition int16  // the y coordinate of the display on the screen
-	xres      uint16 // The ideal x resolution.
-	yres      uint16 // The idea y resolution.
-	primary   bool   // Whether or not the display is the primary (main) display.
-	active    bool
-}
 
 var (
 	_theme                 string
@@ -62,7 +45,7 @@ var polybarCmd = &cobra.Command{
 			os.Exit(0)
 		}
 		if _select == true {
-			v := rofigo.New("Select Polybar theme:", InstalledPolybarThemes...)
+			v := rofigo.New("Select Polybar theme", InstalledPolybarThemes...)
 			v.Show()
 			log.Infof("You selected: %s", v.Selection)
 
@@ -142,67 +125,8 @@ func validateTheme() bool {
 }
 
 func main() {
-	// connect to X server
-	X, _ := xgb.NewConn()
-	err := randr.Init(X)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	// get root node
-	root := xproto.Setup(X).DefaultScreen(X).Root
-	// get the resources of the screen
-	resources, err := randr.GetScreenResources(X, root).Reply()
-	if err != nil {
-		log.Fatal(err)
-	}
-	// get the primary output
-	primaryOutput, _ := randr.GetOutputPrimary(X, root).Reply()
-
-	var displays []display
-	// go through the connected outputs and get their position and resolution
-	for _, output := range resources.Outputs {
-		info, err := randr.GetOutputInfo(X, output, 0).Reply()
-		if err != nil {
-			log.Fatal(err)
-		}
-		if info.Connection == randr.ConnectionConnected {
-			d := display{
-				name: string(info.Name),
-			}
-			crtc, err := randr.GetCrtcInfo(X, info.Crtc, 0).Reply()
-			if err != nil {
-				// log.Fatal("Failed to get CRTC info", err)
-				// "BadCrtc" happens when attempting to get
-				// a crtc for an output is disabled (inactive).
-				// TODO: figure out a better way to identify active vs inactive
-				d.active = false
-			} else {
-				d.active = true
-				d.xposition = crtc.X
-				d.yposition = crtc.Y
-			}
-
-			if output == primaryOutput.Output {
-				d.primary = true
-			} else {
-				d.primary = false
-			}
-			bestMode := info.Modes[0]
-			for _, mode := range resources.Modes {
-				if mode.Id == uint32(bestMode) {
-					d.xres = mode.Width
-					d.yres = mode.Height
-				}
-			}
-			displays = append(displays, d)
-		}
-	}
-
-	// order the displays by their position, left to right.
-	sort.Slice(displays, func(i, j int) bool {
-		return displays[i].xposition < displays[j].xposition
-	})
+	ds := displays{}
 
 	// kill all polybar sessions polybar
 	cmd := exec.Command("sh", "-c", "killall -q polybar")
@@ -217,22 +141,16 @@ func main() {
 	// create the env vars we'll hand to polybar
 	// polybar needs to know the theme, and what the left, right and main monitor are
 	var polybarEnvVars []string
-	for i, d := range displays {
-		// skip inactive monitors
-		if !d.active {
-			continue
-		}
-		if d.primary {
-			s := fmt.Sprintf("MONITOR_MAIN=%s", d.name)
-			polybarEnvVars = append(polybarEnvVars, s)
-		} else if i == 0 {
-			s := fmt.Sprintf("MONITOR_LEFT=%s", d.name)
-			polybarEnvVars = append(polybarEnvVars, s)
-		} else if i == 1 || i == 2 {
-			s := fmt.Sprintf("MONITOR_RIGHT=%s", d.name)
-			polybarEnvVars = append(polybarEnvVars, s)
-		}
-	}
+
+	s := fmt.Sprintf("MONITOR_MAIN=%s", ds.getPrimary().name)
+	polybarEnvVars = append(polybarEnvVars, s)
+
+	s = fmt.Sprintf("MONITOR_LEFT=%s", ds.getLeft().name)
+	polybarEnvVars = append(polybarEnvVars, s)
+
+	s = fmt.Sprintf("MONITOR_RIGHT=%s", ds.getRight().name)
+	polybarEnvVars = append(polybarEnvVars, s)
+
 	// add the theme to the environment
 	t := fmt.Sprintf("polybar_theme=%s", FullThemePath)
 	log.Infoln(t)
