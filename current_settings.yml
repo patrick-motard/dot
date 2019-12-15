@@ -9,8 +9,11 @@ i3_wm:
     top: 10
   settings_file: .config/i3/config
 polybar:
-  theme: nord
+  theme: nord-wide
   themes:
+  - gaps:
+      top: 80
+    name: nord-wide
   - name: nord-arrow
   - bars:
     - main.top.middle
