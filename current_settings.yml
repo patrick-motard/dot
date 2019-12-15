@@ -11,9 +11,6 @@ i3_wm:
 polybar:
   theme: nord-wide
   themes:
-  - gaps:
-      top: 80
-    name: nord-wide
   - name: nord-arrow
   - bars:
     - main.top.middle
@@ -24,6 +21,13 @@ polybar:
     gaps:
       top: 80
     name: nord
+  - bars:
+    - main.top.middle
+    - left.top.middle
+    - right.top.middle
+    gaps:
+      top: 80
+    name: nord-wide
   themes_directory: .config/polybar/themes
 sound:
   port: analog-output-lineout
