@@ -66,7 +66,6 @@ var polybarCmd = &cobra.Command{
 
 		FullThemePath = FullThemesPath + "/" + _theme + "/config"
 		// TODO: also check if theme is new and succeeded loading
-		log.Info("Proof!")
 		if themeIsValid {
 			viper.WriteConfig()
 		}
